@@ -1,26 +1,32 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/aristotelis79/Jsonzable/routers"
-	"github.com/gorilla/mux"
+	"github.com/aristotelis79/Jsonzable/controllers"
+	"github.com/savsgio/atreugo/v10"
+	"github.com/valyala/fasthttp"
 )
 
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
 
-	// statikFS, err := fs.New()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	server := configServer()
 
-	// staticServer := http.FileServer(statikFS)
-	// sh := http.StripPrefix("/swaggerui/", staticServer)
-	// router.PathPrefix("/swaggerui/").Handler(sh)
+	registerRoutes(server)
 
-	routers.RegisterV1Routes(router)
+	if err := server.ListenAndServe(); err != nil {
+		panic(err)
+	}
+}
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+func configServer() *atreugo.Atreugo {
+	config := atreugo.Config{Addr: "127.0.0.1:8000"}
+	server := atreugo.New(config)
+	return server
+}
+
+func registerRoutes(server *atreugo.Atreugo) {
+	baseControllerPath := "/base"
+	server.Path(fasthttp.MethodGet, baseControllerPath, controllers.GET)
+	server.Path(fasthttp.MethodPost, baseControllerPath, controllers.POST)
+	server.Path(fasthttp.MethodPut, baseControllerPath, controllers.PUT)
+	server.Path(fasthttp.MethodDelete, baseControllerPath, controllers.DELETE)
 }
